@@ -1,0 +1,33 @@
+cabal-version:       3.0
+-- This file configures the Haskell build tool Cabal,
+-- e.g. setting which Haskell libraries are avaiable.
+
+-- DO NOT MODIFY THIS FILE
+-- The autograder provides its own (identical) copy of this file,
+-- so modifying it just makes your configuration different to the autograder.
+name:                assignment-csharp
+version:             0.2025.0.0
+
+executable csharp
+  main-is:             Main.hs
+  other-modules:
+    CSharp.Algebra
+    CSharp.CodeGen
+    CSharp.AbstractSyntax
+    CSharp.Parser
+    CSharp.Analysis
+    ParseLib.Core
+    ParseLib.Derived
+    SSM
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+  default-extensions:
+    , TupleSections
+    , RecordWildCards
+    , LambdaCase
+  -- These libraries & versions are what the autograder has.
+  -- Change at your own risk!
+  build-depends:
+    , base       == 4.19.2.0
+    , containers == 0.6.8
+    , filepath   == 1.4.301.0
