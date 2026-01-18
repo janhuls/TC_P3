@@ -34,13 +34,6 @@ data Expr   -- Expressions
   | ExprOper  Operator Expr Expr
   deriving (Eq, Ord, Show)
 
-infixl 8 `OpMul`, `OpDiv`, `OpMod`
-infixl 7 `OpAdd`, `OpSub`
-infixl 6 `OpLeq`, `OpLt`, `OpGeq`, `OpGt`
-infixl 5 `OpEq`, `OpNeq`
-infixl 4 `OpAnd`
-infixl 3 `OpXor`
-infixl 2 `OpOr`
 
 data Operator -- Binary operators
   = OpAdd | OpSub | OpMul | OpDiv

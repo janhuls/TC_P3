@@ -245,6 +245,16 @@ pExprSimple =  ExprLit  <$> pLiteral
            <|> ExprVar  <$> sLowerId
            <|> parenthesised pExpr
 
+pExprMul :: Parser Token Expr
+pExprMul = chainl pExprSimple (ExprOper <$> mulOp)
+  where
+    mulOp :: Parser Token Operator
+    mulOp = anySymbol >>= (\case
+              Operator OpMul -> pure OpMul
+              Operator OpDiv -> pure OpDiv
+              Operator OpMod -> pure OpMod
+              _              -> empty)
+
 pExpr :: Parser Token Expr
 pExpr = chainr pExprSimple (ExprOper <$> sOperator)
 
