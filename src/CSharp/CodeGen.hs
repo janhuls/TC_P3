@@ -1,7 +1,7 @@
 module CSharp.CodeGen where
 
-import CSharp.AbstractSyntax 
-import CSharp.Algebra 
+import CSharp.AbstractSyntax
+import CSharp.Algebra
 
 import SSM
 
@@ -16,7 +16,7 @@ import qualified Data.Map as M
 -- Change these definitions instead of the function signatures to get better type errors.
 type C = Code                          -- Class
 type M = Code                          -- Member
-type S = (Env, Code)                   -- Statement
+type S = Env -> (Env, Code)            -- Statement
 type E = Env -> ValueOrAddress -> Code -- Expression
 type Env = M.Map Ident Int
 
@@ -27,7 +27,7 @@ lookupVar :: Ident -> Env -> Int
 lookupVar x env =
   case M.lookup x env of
     Just i  -> i
-    Nothing -> error ("use of undeclared variable: " ++ x) --shouldn't happen if analysis is correct
+    Nothing -> error ("use of undeclared variable: " ++ x ++ " in environment" ++ show env) --shouldn't happen if analysis is correct
 
 codeAlgebra :: CSharpAlgebra C M S E
 codeAlgebra = CSharpAlgebra
@@ -51,60 +51,57 @@ fMembDecl :: Decl -> M
 fMembDecl d = []
 
 fMembMeth :: RetType -> Ident -> [Decl] -> S -> M
-fMembMeth t x ps (_, s) = [LABEL x] ++ s ++ [RET]
+fMembMeth t x ps body = [LABEL x] ++ code ++ [RET] where 
+  initEnv = M.fromList [(x, i) | (Decl _ x, i) <- zip ps [0..]]
+  (_, code) = body initEnv --run the body with parameter env
 
 fStatDecl :: Decl -> S
-fStatDecl (Decl _ ident) = (M.singleton ident 0, [LDC 0])
+fStatDecl (Decl _ ident) env = 
+  let env' = extendEnv ident env
+  in (env', [LDC 0])
 
 fStatExpr :: E -> S
-fStatExpr e = (M.empty, e M.empty Value ++ [pop])
+fStatExpr e env = (env, e env Value ++ [pop])
 
 fStatIf :: E -> S -> S -> S
-fStatIf e (env1, s1) (env2, s2) = (M.empty, c ++ [BRF (n1 + 2)] ++ s1 ++ [BRA n2] ++ s2) where
-  c        = e M.empty Value
-  (n1, n2) = (codeSize s1, codeSize s2)
+fStatIf e s1 s2 env = (env, c ++ [BRF (n1 + 2)] ++ s1' ++ [BRA n2] ++ s2') where
+  (_, s1') = s1 env
+  (_, s2') = s2 env
+  c        = e env Value
+  (n1, n2) = (codeSize s1', codeSize s2')
 
 fStatWhile :: E -> S -> S
-fStatWhile e (env1, s1) = (M.empty, [BRA n] ++ s1 ++ c ++ [BRT (-(n + k + 2))]) where
-  c = e M.empty Value
-  (n, k) = (codeSize s1, codeSize c)
+fStatWhile e s1 env = (env, [BRA n] ++ s1' ++ c ++ [BRT (-(n + k + 2))]) where
+  (env1, s1') = s1 env
+  c = e env Value
+  (n, k) = (codeSize s1', codeSize c)
 
 fStatReturn :: E -> S
-fStatReturn e = (M.empty, e M.empty Value ++ [pop] ++ [RET])
+fStatReturn e env = (env, e env Value ++ [pop] ++ [RET])
 
 fStatBlock :: [S] -> S
-fStatBlock ss =
-  ( finalEnv
-  , concat codes
-  )
+fStatBlock ss env0 =
+  foldl step (env0, []) ss
   where
-    (finalEnv, codes, _) = foldl step (M.empty, [], 0) ss
-
-    step (env, codeAcc, offset) (env', code') =
-      let
-        shiftedEnv = M.map (+ offset) env'
-        newEnv     = M.union env shiftedEnv
-      in
-        ( newEnv
-        , codeAcc ++ code'
-        , offset + M.size env'
-        )
+    step (env, codeAcc) stmt =
+      let (env', code) = stmt env
+      in (env', codeAcc ++ code)
 
 fExprLit :: Literal -> E
-fExprLit l va  = [LDC n] where
+fExprLit l env va  = [LDC n] where
   n = case l of
     LitInt n -> n
     LitBool b -> bool2int b
 
 fExprVar :: Ident -> E
-fExprVar x va = case va of
+fExprVar x env va = case va of
     Value   ->  [LDL  loc]
     Address ->  [LDLA loc]
-  where loc = 42
+  where loc = lookupVar x env
 
 fExprOp :: Operator -> E -> E -> E
-fExprOp OpAsg e1 e2 va = e2 Value ++ [LDS 0] ++ e1 Address ++ [STA 0]
-fExprOp op    e1 e2 va = e1 Value ++ e2 Value ++ [
+fExprOp OpAsg e1 e2 env va = e2 env Value ++ [LDS 0] ++ e1 env Address ++ [STA 0]
+fExprOp op    e1 e2 env va = e1 env Value ++ e2 env Value ++ [
    case op of
     { OpAdd -> ADD; OpSub -> SUB; OpMul -> MUL; OpDiv -> DIV;
     ; OpMod -> MOD
@@ -121,4 +118,4 @@ data ValueOrAddress = Value | Address
 -- Encode a C# bool as an int, for the SSM
 bool2int :: Bool -> Int
 bool2int True  = -1
-bool2int False = 0 
+bool2int False = 0
