@@ -23,6 +23,12 @@ data Stat     -- Statements
   | StatWhile  Expr Stat
   | StatReturn Expr
   | StatBlock  [Stat]
+  | StatFor    ([ExprDecl], Expr, [ExprDecl]) Stat
+  deriving (Eq, Ord, Show)
+
+data ExprDecl
+  = ForDecl Decl
+  | ForExpr Expr
   deriving (Eq, Ord, Show)
 
 data Literal = LitInt Int | LitBool Bool

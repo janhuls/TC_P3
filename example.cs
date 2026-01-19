@@ -7,6 +7,8 @@ class Hello
     {
         int b;
         b = 1;
+        for (int i, i = 0; i < 10; i = i + 1)
+        {}
     }
     
     int square( int x )

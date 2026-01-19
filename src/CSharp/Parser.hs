@@ -41,6 +41,7 @@ import ParseLib.Derived hiding (braced, bracketed, parenthesised)
 import Control.Applicative
 import Data.Char
 import Data.Maybe
+import GHC.Read (paren)
 
 ---- Begin Pretty-printing functions for C# syntax ----
 
@@ -68,6 +69,7 @@ printKeyword = \case
   ; KeyWhile -> "while";  KeyReturn -> "return"
   ; KeyTry   -> "try";    KeyCatch  -> "catch"
   ; KeyClass -> "class";  KeyVoid   -> "void"
+  ; KeyFor   -> "for"
   }
 
 -- Concrete syntax of C# punctuation
@@ -93,6 +95,7 @@ data Keyword
   | KeyWhile | KeyReturn
   | KeyTry   | KeyCatch
   | KeyClass | KeyVoid
+  | KeyFor
   deriving (Eq, Show, Ord, Enum, Bounded)
 
 data Punctuation
@@ -233,8 +236,19 @@ pStat =  StatExpr <$> pExpr <*  sSemi
      <|> StatIf     <$ keyword KeyIf     <*> parenthesised pExpr <*> pStat <*> optionalElse
      <|> StatWhile  <$ keyword KeyWhile  <*> parenthesised pExpr <*> pStat
      <|> StatReturn <$ keyword KeyReturn <*> pExpr               <*  sSemi
+     <|> StatFor    <$ keyword KeyFor    <*> pForHeader          <*> pStat
      <|> pBlock
-     where optionalElse = option (keyword KeyElse *> pStat) (StatBlock [])
+     where
+      optionalElse = option (keyword KeyElse *> pStat) (StatBlock [])
+      pExprDecl = ForExpr <$> pExpr <|> ForDecl <$> pDecl
+      pExprDecls = option (listOf pExprDecl (punctuation Comma)) []
+      pForHeader = parenthesised $ 
+                    (,,) 
+                      <$> pExprDecls <* sSemi
+                      <*> pExpr      <* sSemi
+                      <*> pExprDecls
+
+
 
 pLiteral :: Parser Token Literal
 pLiteral =  LitBool <$> sBoolLit

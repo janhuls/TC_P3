@@ -40,6 +40,21 @@ foldCSharp CSharpAlgebra{..} = fClas where
   fStat (StatWhile  e s1)     = statWhile (fExpr e) (fStat s1)
   fStat (StatReturn e)        = statReturn (fExpr e)
   fStat (StatBlock  ss)       = statBlock (map fStat ss)
+  fStat (StatFor (inits, cond, next) body) =
+    statBlock
+      ( map fExprDecl inits
+        ++ [ statWhile
+            (fExpr cond)
+            ( statBlock
+                ( fStat body
+                : map fExprDecl next
+                )
+            )
+          ]
+      )
   fExpr (ExprLit    lit)      = exprLit lit
   fExpr (ExprVar    var)      = exprVar var
   fExpr (ExprOper   op e1 e2) = exprOper op (fExpr e1) (fExpr e2)
+
+  fExprDecl (ForDecl d) = statDecl d
+  fExprDecl (ForExpr e) = statExpr (fExpr e)

@@ -6,6 +6,23 @@ main:
 	LDLA 42
 	STA 0
 	AJS -1
+	LDC 0
+	LDS 0
+	LDLA 42
+	STA 0
+	AJS -1
+	BRA 13
+	LDL 42
+	LDC 1
+	ADD
+	LDS 0
+	LDLA 42
+	STA 0
+	AJS -1
+	LDL 42
+	LDC 10
+	LT
+	BRT -20
 	RET
 square:
 	LDL 42
