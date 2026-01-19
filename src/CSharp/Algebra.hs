@@ -16,7 +16,7 @@ data CSharpAlgebra c m s e
 
     , statDecl   :: Decl -> s
     , statExpr   :: e -> s
-    , statIf     :: e -> s -> s  -> s
+    , statIf     :: e -> s -> s -> s
     , statWhile  :: e -> s -> s
     , statReturn :: e -> s
     , statBlock  :: [s] -> s
