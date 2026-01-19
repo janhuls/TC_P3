@@ -24,6 +24,7 @@ data CSharpAlgebra c m s e
     , exprLit   :: Literal -> e
     , exprVar   :: Ident -> e
     , exprOper  :: Operator -> e -> e -> e
+    , exprCall  :: Ident -> [e] -> e
     }
 
 -- The "{..}" notation brings all fields of the algebra into scope.
@@ -55,6 +56,7 @@ foldCSharp CSharpAlgebra{..} = fClas where
   fExpr (ExprLit    lit)      = exprLit lit
   fExpr (ExprVar    var)      = exprVar var
   fExpr (ExprOper   op e1 e2) = exprOper op (fExpr e1) (fExpr e2)
+  fExpr (ExprCall   ident es) = exprCall ident (map fExpr es)
 
   fExprDecl (ForDecl d) = statDecl d
   fExprDecl (ForExpr e) = statExpr (fExpr e)

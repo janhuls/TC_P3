@@ -43,6 +43,7 @@ codeAlgebra = CSharpAlgebra
   fExprLit
   fExprVar
   fExprOp
+  fExprCall
 
 fClass :: ClassName -> [M] -> C
 fClass c ms = [Bsr "main", HALT] ++ concat ms
@@ -51,12 +52,12 @@ fMembDecl :: Decl -> M
 fMembDecl d = []
 
 fMembMeth :: RetType -> Ident -> [Decl] -> S -> M
-fMembMeth t x ps body = [LABEL x] ++ code ++ [RET] where 
+fMembMeth t x ps body = [LABEL x] ++ code ++ ([RET | t == TyVoid]) where
   initEnv = M.fromList [(x, i) | (Decl _ x, i) <- zip ps [0..]]
   (_, code) = body initEnv --run the body with parameter env
 
 fStatDecl :: Decl -> S
-fStatDecl (Decl _ ident) env = 
+fStatDecl (Decl _ ident) env =
   let env' = extendEnv ident env
   in (env', [LDC 0])
 
@@ -77,7 +78,7 @@ fStatWhile e s1 env = (env, [BRA n] ++ s1' ++ c ++ [BRT (-(n + k + 2))]) where
   (n, k) = (codeSize s1', codeSize c)
 
 fStatReturn :: E -> S
-fStatReturn e env = (env, e env Value ++ [pop] ++ [RET])
+fStatReturn e env = (env, e env Value ++ [RET])
 
 fStatBlock :: [S] -> S
 fStatBlock ss env0 =
@@ -110,6 +111,11 @@ fExprOp op    e1 e2 env va = e1 env Value ++ e2 env Value ++ [
     ; OpGeq -> GT; OpGt -> GT;
     ; OpEq  -> EQ; OpNeq -> NE;}
   ]
+
+fExprCall :: Ident -> [E] -> E
+fExprCall "print" exprs env _  = concatMap (\arg -> arg env Value ++ [TRAP 0]) exprs
+fExprCall func exprs env Value = concatMap (\arg -> arg env Value) exprs ++ [Bsr func]
+fExprCall _ _ _ Address        = error "function call cannot be an address"
 
 -- | Whether we are computing the value of a variable, or a pointer to it
 data ValueOrAddress = Value | Address

@@ -38,6 +38,7 @@ data Expr   -- Expressions
   = ExprLit   Literal
   | ExprVar   Ident
   | ExprOper  Operator Expr Expr
+  | ExprCall  Ident [Expr]
   deriving (Eq, Ord, Show)
 
 

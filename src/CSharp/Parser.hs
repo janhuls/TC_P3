@@ -248,16 +248,18 @@ pStat =  StatExpr <$> pExpr <*  sSemi
                       <*> pExpr      <* sSemi
                       <*> pExprDecls
 
-
-
 pLiteral :: Parser Token Literal
 pLiteral =  LitBool <$> sBoolLit
         <|> LitInt  <$> sIntLit
 
 pExprSimple :: Parser Token Expr
 pExprSimple =  ExprLit  <$> pLiteral
+           <|> ExprCall <$> sLowerId <*> pExprList
            <|> ExprVar  <$> sLowerId
-           <|> parenthesised pExpr
+           <|> parenthesised pExpr 
+           where
+  pExprList :: Parser Token [Expr]
+  pExprList = parenthesised $ option (listOf pExpr (punctuation Comma)) []
 
 opFrom :: [Operator] -> Parser Token Operator
 opFrom ops = anySymbol >>= \case

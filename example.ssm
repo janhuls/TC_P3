@@ -7,6 +7,27 @@ main:
 	LDLA 0
 	STA 0
 	AJS -1
+	LDC 0
+	LDC 0
+	LDS 0
+	LDLA 1
+	STA 0
+	AJS -1
+	BRA 19
+	LDC 1
+	TRAP 0
+	AJS -1
+	LDL 1
+	LDC 1
+	ADD
+	LDS 0
+	LDLA 1
+	STA 0
+	AJS -1
+	LDL 1
+	LDC 10
+	LT
+	BRT -26
 	RET
 square:
 	LDC 0
@@ -18,8 +39,6 @@ square:
 	STA 0
 	AJS -1
 	LDL 1
-	AJS -1
-	RET
 	RET
 abs:
 	LDL 0
@@ -35,8 +54,6 @@ abs:
 	AJS -1
 	BRA 0
 	LDL 0
-	AJS -1
-	RET
 	RET
 fac:
 	LDC 0
@@ -71,6 +88,4 @@ fac:
 	LE
 	BRT -33
 	LDL 1
-	AJS -1
-	RET
 	RET
