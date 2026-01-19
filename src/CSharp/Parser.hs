@@ -245,18 +245,52 @@ pExprSimple =  ExprLit  <$> pLiteral
            <|> ExprVar  <$> sLowerId
            <|> parenthesised pExpr
 
+opFrom :: [Operator] -> Parser Token Operator
+opFrom ops = anySymbol >>= \case
+  Operator op | op `elem` ops -> pure op
+  _                           -> empty
+
 pExprMul :: Parser Token Expr
-pExprMul = chainl pExprSimple (ExprOper <$> mulOp)
+pExprMul = chainl pExprSimple (ExprOper <$> opFrom [OpMul, OpDiv, OpMod])
+
+pExprAdd :: Parser Token Expr
+pExprAdd = chainl pExprMul (ExprOper <$> opFrom [OpAdd, OpSub])
+
+pExprRel :: Parser Token Expr
+pExprRel = chainl pExprAdd (ExprOper <$> opFrom [OpLt, OpLeq, OpGt, OpGeq])
+
+pExprEq :: Parser Token Expr
+pExprEq = chainl pExprRel (ExprOper <$> opFrom [OpEq, OpNeq])
+
+pExprAnd :: Parser Token Expr
+pExprAnd = chainl pExprEq (ExprOper <$> opFrom [OpAnd])
+
+pExprXor :: Parser Token Expr
+pExprXor = chainl pExprAnd (ExprOper <$> opFrom [OpXor])
+
+pExprOr :: Parser Token Expr
+pExprOr = chainl pExprXor (ExprOper <$> opFrom [OpOr])
+
+asgOp :: Parser Token Operator
+asgOp = anySymbol >>= \case
+  Operator OpAsg -> pure OpAsg
+  _              -> empty
+
+pExprAssign :: Parser Token Expr
+pExprAssign =
+      tryAssign
+  <|> pExprOr
   where
-    mulOp :: Parser Token Operator
-    mulOp = anySymbol >>= (\case
-              Operator OpMul -> pure OpMul
-              Operator OpDiv -> pure OpDiv
-              Operator OpMod -> pure OpMod
-              _              -> empty)
+    tryAssign = do
+      lhs <- pExprOr
+      op  <- asgOp
+      rhs <- pExprAssign
+      case lhs of
+        ExprVar _ -> pure (ExprOper op lhs rhs)
+        _         -> empty
 
 pExpr :: Parser Token Expr
-pExpr = chainr pExprSimple (ExprOper <$> sOperator)
+pExpr = pExprAssign
 
 pDecl :: Parser Token Decl
 pDecl = Decl <$> pRetType <*> sLowerId
