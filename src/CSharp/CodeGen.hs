@@ -52,7 +52,7 @@ fMembDecl :: Decl -> M
 fMembDecl d = []
 
 fMembMeth :: RetType -> Ident -> [Decl] -> S -> M
-fMembMeth t x ps body = [LABEL x] ++ code ++ ([RET | t == TyVoid]) where
+fMembMeth t x ps body = [LABEL x] ++ code ++ [RET | t == TyVoid] where
   initEnv = M.fromList [(x, i) | (Decl _ x, i) <- zip ps [0..]]
   (_, code) = body initEnv --run the body with parameter env
 
@@ -62,7 +62,7 @@ fStatDecl (Decl _ ident) env =
   in (env', [LDC 0])
 
 fStatExpr :: E -> S
-fStatExpr e env = (env, e env Value ++ [pop])
+fStatExpr e env = (env, e env Value ++ [AJS (-1)])
 
 fStatIf :: E -> S -> S -> S
 fStatIf e s1 s2 env = (env, c ++ [BRF (n1 + 2)] ++ s1' ++ [BRA n2] ++ s2') where
@@ -81,11 +81,14 @@ fStatReturn :: E -> S
 fStatReturn e env = (env, e env Value ++ [RET])
 
 fStatBlock :: [S] -> S
-fStatBlock ss env0 = foldl step (env0, []) ss where
-  step :: (Env, Code) -> (Env -> (Env, Code)) -> (Env, Code)
-  step (env, codeAcc) stmt =
-    let (env', code) = stmt env
-    in (env', codeAcc ++ code)
+fStatBlock ss env0 =
+  let (envFinal, code) = foldl step (env0, []) ss
+      locals = M.size envFinal - M.size env0
+  in (env0, code ++ [AJS (-locals)])
+  where
+    step (env, acc) stmt =
+      let (env', code) = stmt env
+      in (env', acc ++ code)
 
 fExprLit :: Literal -> E
 fExprLit l env va  = [LDC n] where
@@ -100,7 +103,9 @@ fExprVar x env va = case va of
   where loc = lookupVar x env
 
 fExprOp :: Operator -> E -> E -> E
-fExprOp OpAsg e1 e2 env va = e2 env Value ++ [LDS 0] ++ e1 env Address ++ [STA 0]
+fExprOp OpAsg e1 e2 env va = e2 env Value ++ e1 env Address ++ [STA 0] ++ case va of 
+                                                                          Value -> [LDL 0]
+                                                                          Address -> []
 fExprOp op    e1 e2 env va = e1 env Value ++ e2 env Value ++ [
    case op of
     { OpAdd -> ADD; OpSub -> SUB; OpMul -> MUL; OpDiv -> DIV;

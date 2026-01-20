@@ -156,7 +156,7 @@ lexWhiteSpace :: Parser Char String
 lexWhiteSpace = greedy (satisfy isSpace)
 
 lexComment :: Parser Char (Maybe Token)
-lexComment = token "//" *> greedy (satisfy isAlphaNum) *> succeed Nothing
+lexComment = token "//" *> greedy (satisfy (/= '\n')) *> succeed Nothing
 
 -- | version of greedy which returns all non Nothing values
 greedyMaybe :: Parser s (Maybe a) -> Parser s [a]
@@ -278,14 +278,14 @@ pExprRel = chainl pExprAdd (ExprOper <$> opFrom [OpLt, OpLeq, OpGt, OpGeq])
 pExprEq :: Parser Token Expr
 pExprEq = chainl pExprRel (ExprOper <$> opFrom [OpEq, OpNeq])
 
-pExprAnd :: Parser Token Expr
-pExprAnd = chainl pExprEq (ExprOper <$> opFrom [OpAnd])
-
 pExprXor :: Parser Token Expr
-pExprXor = chainl pExprAnd (ExprOper <$> opFrom [OpXor])
+pExprXor = chainl pExprEq (ExprOper <$> opFrom [OpXor])
+
+pExprAnd :: Parser Token Expr
+pExprAnd = chainl pExprXor (ExprOper <$> opFrom [OpAnd])
 
 pExprOr :: Parser Token Expr
-pExprOr = chainl pExprXor (ExprOper <$> opFrom [OpOr])
+pExprOr = chainl pExprAnd (ExprOper <$> opFrom [OpOr])
 
 asgOp :: Parser Token Operator
 asgOp = anySymbol >>= \case

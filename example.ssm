@@ -1,2 +1,99 @@
 	Bsr main
 	HALT
+main:
+	LDC 0
+	LDC 1
+	LDLA 0
+	STA 0
+	LDL 0
+	AJS -1
+	LDC 0
+	LDC 0
+	LDLA 1
+	STA 0
+	LDL 0
+	AJS -1
+	BRA 21
+	LDC 1
+	TRAP 0
+	AJS -1
+	LDL 1
+	LDC 1
+	ADD
+	LDLA 1
+	STA 0
+	LDL 0
+	AJS -1
+	AJS 0
+	LDL 1
+	LDC 10
+	LT
+	BRT -28
+	AJS -1
+	AJS -1
+	RET
+square:
+	LDC 0
+	LDL 0
+	LDL 0
+	MUL
+	LDLA 1
+	STA 0
+	LDL 0
+	AJS -1
+	LDL 1
+	RET
+	AJS -1
+abs:
+	LDL 0
+	LDC 0
+	LT
+	BRF 15
+	LDC 0
+	LDL 0
+	SUB
+	LDLA 0
+	STA 0
+	LDL 0
+	AJS -1
+	BRA 2
+	AJS 0
+	LDL 0
+	RET
+	AJS 0
+fac:
+	LDC 0
+	LDC 0
+	LDC 1
+	LDLA 2
+	STA 0
+	LDL 0
+	AJS -1
+	LDC 1
+	LDLA 1
+	STA 0
+	LDL 0
+	AJS -1
+	BRA 28
+	LDL 1
+	LDL 2
+	MUL
+	LDLA 1
+	STA 0
+	LDL 0
+	AJS -1
+	LDL 2
+	LDC 1
+	ADD
+	LDLA 2
+	STA 0
+	LDL 0
+	AJS -1
+	AJS 0
+	LDL 2
+	LDL 0
+	LE
+	BRT -35
+	LDL 1
+	RET
+	AJS -2
