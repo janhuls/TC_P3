@@ -81,12 +81,11 @@ fStatReturn :: E -> S
 fStatReturn e env = (env, e env Value ++ [RET])
 
 fStatBlock :: [S] -> S
-fStatBlock ss env0 =
-  foldl step (env0, []) ss
-  where
-    step (env, codeAcc) stmt =
-      let (env', code) = stmt env
-      in (env', codeAcc ++ code)
+fStatBlock ss env0 = foldl step (env0, []) ss where
+  step :: (Env, Code) -> (Env -> (Env, Code)) -> (Env, Code)
+  step (env, codeAcc) stmt =
+    let (env', code) = stmt env
+    in (env', codeAcc ++ code)
 
 fExprLit :: Literal -> E
 fExprLit l env va  = [LDC n] where

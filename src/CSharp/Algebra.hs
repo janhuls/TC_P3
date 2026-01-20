@@ -12,7 +12,7 @@ data CSharpAlgebra c m s e
     { clas :: ClassName -> [m] -> c
 
     , memberD :: Decl -> m
-    , memberM :: RetType -> String -> [Decl] -> s -> m
+    , memberM :: RetType -> Ident -> [Decl] -> s -> m
 
     , statDecl   :: Decl -> s
     , statExpr   :: e -> s
