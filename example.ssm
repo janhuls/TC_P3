@@ -13,6 +13,7 @@ main:
 	STA 0
 	LDL 0
 	AJS -1
+	AJS -1
 	BRA 21
 	LDC 1
 	TRAP 0
@@ -30,7 +31,7 @@ main:
 	LT
 	BRT -28
 	AJS -1
-	AJS -1
+	AJS -2
 	RET
 square:
 	LDC 0

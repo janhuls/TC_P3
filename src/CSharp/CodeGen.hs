@@ -84,7 +84,7 @@ fStatBlock :: [S] -> S
 fStatBlock ss env0 =
   let (envFinal, code) = foldl step (env0, []) ss
       locals = M.size envFinal - M.size env0
-  in (env0, code ++ [AJS (-locals)])
+  in (envFinal, code ++ [AJS (-locals)])
   where
     step (env, acc) stmt =
       let (env', code) = stmt env

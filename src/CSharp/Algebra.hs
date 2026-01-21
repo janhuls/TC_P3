@@ -41,18 +41,17 @@ foldCSharp CSharpAlgebra{..} = fClas where
   fStat (StatWhile  e s1)     = statWhile (fExpr e) (fStat s1)
   fStat (StatReturn e)        = statReturn (fExpr e)
   fStat (StatBlock  ss)       = statBlock (map fStat ss)
-  fStat (StatFor (inits, cond, next) body) =
+  fStat (StatFor (inits, cond, next) body) = -- desugar for loops to while loops
     statBlock
-      ( map fExprDecl inits
-        ++ [ statWhile
-            (fExpr cond)
-            ( statBlock
-                ( fStat body
-                : map fExprDecl next
-                )
-            )
-          ]
-      )
+      [ statBlock (map fExprDecl inits)
+      , statWhile
+          (fExpr cond)
+          ( statBlock
+              ( fStat body
+              : map fExprDecl next
+              )
+          )
+      ]
   fExpr (ExprLit    lit)      = exprLit lit
   fExpr (ExprVar    var)      = exprVar var
   fExpr (ExprOper   op e1 e2) = exprOper op (fExpr e1) (fExpr e2)
