@@ -1,40 +1,82 @@
-//comment
-class Hello
-{
-    int g;
-    //
-    void main()
-    {
-        int b;
-        b = 1;
-        for (int i, i = 0; i < 10; i = i + 1)
-            print(1);
-    }
-    
-    int square( int x )
-    {
-        int y;
-        y = x*x;
-        return y;   
-    }
+// Test program for C# subset compiler
 
-    int abs(int x)
-    {
-    	
-        if (x<0)
-            x = 0-x;
-        return x;
+class TestProgram {
+    // Task 9: print function works
+    void testPrint() {
+        print(42);
+        print(1, 2, 3);
     }
     
-    int fac(int x)
-    {
-        int r; int t;
-        t=1; r=1;
-        while (t<=x)
-        {
-            r = r*t;
-            t = t+1;
+    // Task 4: right-associative assignment
+    void testAssignment() {
+        int a;
+        int b;
+        int c;
+        a = b = c = 5;
+        print(a, b, c);
+    }
+    
+    // Task 2: operator precedence
+    void testPrecedence() {
+        int result;
+        result = 2 + 3 * 4;  // should be 14, not 20
+        print(result);
+    }
+    
+    // Task 7: lazy evaluation of logical operators
+    void testLazyEval() {
+        bool result;
+        result = false && true;  // should short-circuit
+        print(result);
+        result = true || false;  // should short-circuit
+        print(result);
+    }
+    
+    // Task 5: for loops
+    void testForLoop() {
+        for (int i, i = 0; i < 5; i = i + 1) {
+            print(i);
         }
-        return r;
-   }
+    }
+    
+    // Task 6: local variables with proper scoping
+    void testLocalVars() {
+        int x;
+        x = 10;
+        {
+            int y;
+            y = 20;
+            print(x, y);  // both visible
+        }
+        print(x);  // y no longer visible
+    }
+    
+    // Task 8: function with parameters
+    int add(int a, int b) {
+        return a + b;
+    }
+    
+    // Task 10: function with return value
+    int square(int x) {
+        return x * x;
+    }
+    
+    void testFunctions() {
+        int result;
+        result = add(3, 4);
+        print(result);
+        result = square(5);
+        print(result);
+    }
+    
+    // Main entry point
+    void main() {
+        testPrint();
+        testAssignment();
+        testPrecedence();
+        testLazyEval();
+        testForLoop();
+        testLocalVars();
+        testFunctions();
+    }
 }
