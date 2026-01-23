@@ -7,7 +7,7 @@ import Control.Monad (when, foldM)
 import System.Exit (exitWith, ExitCode(ExitFailure))
 import System.IO (hPutStrLn, stderr)
 
--- Environment types
+-- env types
 type VarEnv = M.Map Ident Type
 type FuncEnv = M.Map Ident ([Type], RetType)
 type MemberEnv = M.Map Ident Type
@@ -22,14 +22,12 @@ data LocalEnv = LocalEnv
   , lGlobal :: GlobalEnv
   } deriving Show
 
--- analyze class and exit with code on error
-analyzeClass :: Class -> IO ()
+analyzeClass :: Class -> IO () -- analyze class and exit with code on error
 analyzeClass cls@(Class _ members) = do
   let globalEnv = collectGlobals cls
   mapM_ (checkMember globalEnv) members
 
--- get global info
-collectGlobals :: Class -> GlobalEnv
+collectGlobals :: Class -> GlobalEnv -- get global info
 collectGlobals (Class _ members) =
   GlobalEnv (collectFuncs members) (collectMembers members)
   where
@@ -43,8 +41,7 @@ collectGlobals (Class _ members) =
       in M.insert name (paramTypes, retType) (collectFuncs rest)
     collectFuncs (_ : rest) = collectFuncs rest
 
--- membercheck
-checkMember :: GlobalEnv -> Member -> IO ()
+checkMember :: GlobalEnv -> Member -> IO () -- membercheck
 checkMember _ (MemberD _) = return ()
 checkMember gEnv (MemberM retType name params body) = do
   let paramTypes = [(pname, t) | Decl (NV t) pname <- params]
@@ -53,8 +50,7 @@ checkMember gEnv (MemberM retType name params body) = do
   return ()                           -- now io matches
 
 
--- check statement (returns updated env)
-checkStatement :: LocalEnv -> Stat -> IO LocalEnv
+checkStatement :: LocalEnv -> Stat -> IO LocalEnv -- rets updated env
 
 checkStatement env (StatDecl (Decl TyVoid _)) = do
   hPutStrLn stderr "Error: cannot declare void variable"
@@ -95,7 +91,7 @@ checkStatement env (StatReturn expr) = do
 checkStatement env (StatBlock stats) = do
   _ <- foldM checkStatement env stats
   return env  -- dont keep decl from block
-
+ --btw when i type -. i mean same as before, so in this case its =check
 checkStatement env (StatFor (inits, cond, updates) body) = do
   -- check inits
   env' <- foldM checkExprDecl env inits
@@ -116,8 +112,7 @@ checkExprDecl env (ForExpr expr) = do
   _ <- checkExpression env expr
   return env
 
--- -. expr and return type
-checkExpression :: LocalEnv -> Expr -> IO Type
+checkExpression :: LocalEnv -> Expr -> IO Type -- -. expr and return type
 
 checkExpression _ (ExprLit (LitInt _)) = return TyInt
 checkExpression _ (ExprLit (LitBool _)) = return TyBool

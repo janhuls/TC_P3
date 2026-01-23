@@ -205,15 +205,15 @@ opFrom ops = anySymbol >>= \case
   Operator op | op `elem` ops -> pure op
   _ -> empty
 
--- Precedence levels (highest to lowest):
--- 1. Multiplicative: *, /, %
--- 2. Additive: +, -
--- 3. Relational: <, <=, >, >=
--- 4. Equality: ==, !=
--- 5. XOR: ^
--- 6. AND: &&
--- 7. OR: ||
--- 8. Assignment: = (right-associative)
+-- precedence levels highest to lowest
+-- multiplicative *, /, %
+-- additive +, -
+-- relational <, <=, >, >=
+-- equality ==, !=
+-- xor ^
+-- and &&
+-- or ||
+-- assignment = (( right-associative
 
 pExprMul :: Parser Token Expr
 pExprMul = chainl pExprSimple (ExprOper <$> opFrom [OpMul, OpDiv, OpMod])
@@ -236,15 +236,14 @@ pExprAnd = chainl pExprXor (ExprOper <$> opFrom [OpAnd])
 pExprOr :: Parser Token Expr
 pExprOr = chainl pExprAnd (ExprOper <$> opFrom [OpOr])
 
--- Assignment is right-associative and lowest precedence
-pExpr :: Parser Token Expr
+pExpr :: Parser Token Expr -- assignment rightassociative and lowest precedence
 pExpr = pExprOr >>= pExprAsg
   where
     pExprAsg lhs = 
       (do op <- anySymbol >>= \case
                   Operator OpAsg -> pure OpAsg
                   _ -> failp
-          rhs <- pExpr  -- Right-associative: recurse to pExpr
+          rhs <- pExpr  -- rightassociative recurse to pexpr
           case lhs of
             ExprVar _ -> pure (ExprOper op lhs rhs)
             _ -> failp)

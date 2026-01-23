@@ -1,13 +1,11 @@
-// Test program for C# subset compiler
-
 class TestProgram {
-    // task 9 print function works
+    // task 9 print func works
     void testPrint() {
         print(42);
         print(1, 2, 3);
     }
     
-    // task 4 right-associative assignment
+    // task 4 rightassociative assignment
     void testAssignment() {
         int a;
         int b;
@@ -16,19 +14,19 @@ class TestProgram {
         print(a, b, c);
     }
     
-    // task 2 operator precedence
+    // task 2 operator precedence 
     void testPrecedence() {
         int result;
-        result = 2 + 3 * 4;  // should be 14, not 20
+        result = 2 + 3 * 4;  // should be 14 not 20
         print(result);
     }
     
-    // task 7 lazy evaluation of logical operators
+    // task 7 lazy eval of logical ops
     void testLazyEval() {
         bool result;
-        result = false && true;  // should short-circuit
+        result = false && true;  // should shortcircuit
         print(result);
-        result = true || false;  // should short-circuit
+        result = true || false;  // should shortcircuit
         print(result);
     }
     
@@ -39,7 +37,7 @@ class TestProgram {
         }
     }
     
-    // task 6 local variables with proper scoping
+    // task 6 local vars with scoping
     void testLocalVars() {
         int x;
         x = 10;
@@ -51,12 +49,12 @@ class TestProgram {
         print(x);  // y no longer visible
     }
     
-    // task 8 function with parameters
+    // task 8 func with params
     int add(int a, int b) {
         return a + b;
     }
 
-    // task 10 function with return value
+    // task 10 func with ret val
     int square(int x) {
         return x * x;
     }

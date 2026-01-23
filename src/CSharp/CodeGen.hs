@@ -89,16 +89,16 @@ fStatReturn e env = (env, e env Value ++ [RET])
 
 fStatBlock :: [S] -> S
 fStatBlock statements env0 =
-  let -- Thread environment through statements, accumulating code
+  let -- thread environment through statements,, accumulating code
       step (currentEnv, accCode) stmt =
         let (newEnv, stmtCode) = stmt currentEnv
         in (newEnv, accCode ++ stmtCode)
       (finalEnv, allCode) = foldl step (env0, []) statements
-      -- Count new locals declared in this block
+      -- count new locals declared here
       numNewLocals = M.size finalEnv - M.size env0
-      -- Clean up locals at end of block
+      -- clean up locals at end of here
       cleanupCode = if numNewLocals > 0 then [AJS (-numNewLocals)] else []
-  in (env0, allCode ++ cleanupCode)  -- Return original env (block scope)
+  in (env0, allCode ++ cleanupCode)  -- ret og env in scope here
 
 fExprLit :: Literal -> E
 fExprLit l _ _ = [LDC n]
